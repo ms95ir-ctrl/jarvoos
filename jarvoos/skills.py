@@ -17,6 +17,7 @@ class Skill:
     body: str
     source: str  # 'bundled' | 'user'
     path: Path | None = None
+    status: str = "untested"  # frontmatter `status`: tested | experimental | untested
 
 
 def _kv(lines) -> dict:
@@ -48,7 +49,8 @@ def _load_dir(d: Path, source: str) -> list[Skill]:
         except OSError:
             continue
         desc = meta.get("description") or next((ln.strip() for ln in body.splitlines() if ln.strip()), "")[:120]
-        out.append(Skill(meta.get("name") or f.stem, desc, body, source, f))
+        status = meta.get("status", "").lower()
+        out.append(Skill(meta.get("name") or f.stem, desc, body, source, f, status if status in ("tested", "experimental") else "untested"))
     return out
 
 
@@ -65,4 +67,4 @@ def get(name: str) -> Skill | None:
 
 
 def index(items: list[Skill] | None = None) -> str:
-    return "\n".join(f"- {s.name}: {s.description}" for s in (load_all() if items is None else items))
+    return "\n".join(f"- {s.name} [{s.status}]: {s.description}" for s in (load_all() if items is None else items))

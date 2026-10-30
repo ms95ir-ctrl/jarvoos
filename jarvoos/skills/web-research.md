@@ -1,6 +1,7 @@
 ---
 name: web-research
 description: How to answer questions that need current information from the web
+status: tested
 ---
 1. Run web_search with a specific query. Use one or two more searches with different wording if the first results are thin.
 2. Open the two or three most relevant URLs with fetch_url. Prefer primary sources (official docs, the project's own site) over aggregators.

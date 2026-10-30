@@ -41,4 +41,12 @@ def test_user_skill_overrides_bundled_and_falls_back_on_name(tmp_path):
     assert got["web-research"].source == "user" and got["web-research"].body == "custom"
     assert got["notes"].description == "First line is the description" and got["notes"].source == "user"
     assert skills.get("nope") is None
-    assert "- web-research: mine" in skills.index()
+    assert "- web-research [untested]: mine" in skills.index()
+
+
+def test_status_frontmatter_and_bundled_test_labels():
+    got = {s.name: s for s in skills.load_all()}
+    assert got["openscad"].status == "tested" and got["build123d"].status == "tested" and got["job-radar"].status == "tested"
+    assert got["ai-media"].status == "experimental"
+    meta, _ = skills.parse("---\nname: x\nstatus: weird\n---\nb")
+    assert meta["status"] == "weird"

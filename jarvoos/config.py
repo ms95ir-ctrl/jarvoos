@@ -313,6 +313,15 @@ def save(cfg: Config, secrets: dict[str, str] | None = None) -> None:
         _write_config(data)
 
 
+def set_secrets(secrets: dict[str, str]) -> None:
+    """Add or replace entries in secrets.env without touching the provider config."""
+    for k, v in secrets.items():
+        if not re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*", k) or not v or "\n" in v or "\r" in v:
+            raise ValueError(f"invalid secret entry {k!r}")
+    merged = {**_read_secrets(), **secrets}
+    _write_atomic(_PATHS["SECRETS_PATH"](), "".join(f"{k}={v}\n" for k, v in merged.items()))
+
+
 def get_secret(env_name: str) -> str | None:
     """Environment wins over secrets.env. Keys are never copied into os.environ."""
     if not env_name:

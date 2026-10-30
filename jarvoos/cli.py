@@ -41,6 +41,9 @@ def _parser() -> argparse.ArgumentParser:
     c.add_argument("args", nargs="*")
     sub.add_parser("sessions", help="list saved sessions")
     sub.add_parser("update", help="update jarvoos")
+    sub.add_parser("skills", help="list bundled and user skills with their test status")
+    from .radar import cli as radar_cli
+    radar_cli.add_parser(sub)
     return ap
 
 
@@ -195,6 +198,13 @@ def cmd_sessions() -> int:
     return 0
 
 
+def cmd_skills() -> int:
+    from . import skills
+    for s in skills.load_all():
+        print(f"{s.name:<18}{s.status:<14}{s.description}")
+    return 0
+
+
 def cmd_update() -> int:
     src = Path(__file__).resolve().parents[1]
     if not (src / ".git").exists():
@@ -251,6 +261,11 @@ def main(argv: list[str] | None = None) -> int:
         return cmd_sessions()
     if args.cmd == "update":
         return cmd_update()
+    if args.cmd == "skills":
+        return cmd_skills()
+    if args.cmd == "radar":
+        from .radar import cli as radar_cli
+        return radar_cli.main(args)
 
     if not first_run_guard(args.prompt is not None):
         return 1

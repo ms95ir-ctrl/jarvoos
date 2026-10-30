@@ -4,7 +4,7 @@ A terminal agent in the spirit of Hermes and Goose, built for a cheap setup: a *
 (Strata, llama-server, Ollama, LM Studio, any OpenAI-compatible server), a **cloud fallback** (OpenRouter) that
 takes over the moment the local server fails, keyless web search, and markdown **skill files**.
 
-## Install (private repo)
+## Install
 
 You need a GitHub login that can read the repo (`gh auth login`), `git`, and Python 3.11+:
 
@@ -41,6 +41,42 @@ Setup takes about a minute and writes nothing until you confirm the summary (Ctr
 Change one part later: `jarvoos setup model | fallback | search | mode`. Check everything: `jarvoos doctor` (add `--fix`
 to repair file permissions and missing folders). Doctor reports ok/warn/fail per check with the exact command that fixes it
 and exits non-zero on any failure.
+
+## Job radar (0.3)
+
+Build your own job radar: a web page of scored postings that refreshes on a schedule.
+
+```bash
+jarvoos radar setup
+```
+
+Setup asks about your background, the work you want, places, salary and languages, proposes a search profile (you can correct it
+in plain words), then offers to build your CV fact bank, connect Telegram and schedule updates. Without a working model it falls
+back to your answers as typed and keyword scoring.
+
+| Command | What it does |
+|---|---|
+| `jarvoos radar run` | fetch, score, notify, rewrite the page now (what cron runs) |
+| `jarvoos radar serve` | live page at http://localhost:8800 with status buttons (interested, applied, interview...) |
+| `jarvoos radar status` | counts, schedule, Telegram state |
+| `jarvoos radar cron on --every 6` / `off` | manage the crontab block (only its own lines are touched) |
+| `jarvoos radar telegram` | connect a bot: token from @BotFather, then send the bot any message |
+| `jarvoos radar cv facts` | questions that build your CV fact bank (or import existing CV text during setup) |
+| `jarvoos radar cv review` | what is vague, unverifiable or missing |
+| `jarvoos radar cv build` | HTML and PDF (PDF needs chromium, weasyprint or wkhtmltopdf) |
+| `jarvoos radar cv tailor ID` | re-orders your own bullets for one posting; it never rewrites or invents them |
+
+Sources are free and keyless: arbeitnow (German searches) and remotive and remoteok (remote work). Postings are scored by your
+model (local first, cloud fallback) against your profile and fact bank; most should score under 50. Strong matches (default 70+) go to
+Telegram once. A static `index.html` is rewritten after every run, so cron alone keeps the page current. Files live in
+`~/.local/share/jarvoos/radar` (`JARVOOS_RADAR` overrides). The Telegram token is stored in `secrets.env`, mode 600.
+
+## Skills and their status
+
+`jarvoos skills` (or `/skills` in chat) lists skills with a status: **tested** (done for real and checked), **experimental**
+(a plan that has not been run here) or **untested** (user skills without a status). Bundled: `job-radar`, `openscad`, `build123d`,
+`video-reel` (frames + voiceover + ffmpeg), `web-research` (tested) and `ai-media` (experimental: local AI image/video generation).
+Add your own as markdown files in `~/.config/jarvoos/skills/` with `name`, `description` and optional `status` frontmatter.
 
 ## Pointing Jarvoos at a backend
 

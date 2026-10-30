@@ -397,7 +397,7 @@ def cmd_tools(st, arg):
 
 def cmd_skills(st, arg):
     for s in st.skills:
-        say(st, f"/{s.name:<20}{s.description}")
+        say(st, f"/{s.name:<20}{s.status:<14}{s.description}")
     if not st.skills:
         say(st, "no skills installed", "dim")
 

@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Job Radar</title>
+<style>
+:root{--bg:#f6f7f9;--card:#fff;--ink:#1b2128;--mute:#667180;--line:#e2e6ea;--accent:#1769aa;--hot:#1a8f4c;--mid:#b7791f;--low:#a33}
+@media (prefers-color-scheme:dark){:root{--bg:#12161a;--card:#1b2128;--ink:#e6eaee;--mute:#93a0ad;--line:#2b343d;--accent:#5aa9e6;--hot:#4cc38a;--mid:#e0b04a;--low:#e57373}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 system-ui,sans-serif}
+header{padding:16px;max-width:900px;margin:0 auto}h1{margin:0;font-size:22px}.sub{color:var(--mute);font-size:13px;margin-top:2px}
+.bar{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}.bar input,.bar select{padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--ink);font:inherit}
+.bar input{flex:1;min-width:160px}main{max-width:900px;margin:0 auto;padding:0 16px 40px}
+.job{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin:10px 0;display:grid;grid-template-columns:52px 1fr;gap:12px}
+.score{font-weight:700;font-size:20px;text-align:center;align-self:start;padding-top:2px}.hot{color:var(--hot)}.mid{color:var(--mid)}.low{color:var(--low)}
+.job h2{font-size:16px;margin:0}.job h2 a{color:var(--accent);text-decoration:none}.meta{color:var(--mute);font-size:13px;margin:2px 0}
+.why{margin:6px 0 0;padding-left:18px;font-size:13.5px}.flags{margin-top:6px;display:flex;flex-wrap:wrap;gap:6px}
+.flag{font-size:12px;border:1px solid var(--line);border-radius:99px;padding:1px 8px;color:var(--mute)}
+.act{margin-top:8px;display:flex;flex-wrap:wrap;gap:6px}.act button{font:inherit;font-size:12.5px;padding:3px 10px;border:1px solid var(--line);border-radius:8px;background:none;color:var(--ink);cursor:pointer}
+.act button.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+.empty{color:var(--mute);text-align:center;padding:40px 0}.runs{color:var(--mute);font-size:12.5px;margin-top:20px}
+</style></head><body>
+<header><h1>Job Radar</h1><div class="sub" id="sub"></div>
+<div class="bar"><input id="q" type="search" placeholder="Filter by title, company, place"><select id="min"><option value="0">All scores</option><option value="40">40+</option><option value="60" selected>60+</option><option value="75">75+</option></select>
+<select id="st"><option value="active">Active</option><option value="all">Everything</option><option value="interested">Interested</option><option value="applied">Applied</option><option value="interview">Interview</option><option value="dismissed">Dismissed</option></select></div></header>
+<main id="list"></main><main><div class="runs" id="runs"></div></main>
+<script>
+var DATA=window.__DATA__||null,LIVE=!DATA,ST=["interested","applied","interview","offer","rejected","dismissed"];
+function el(t,c,x){var e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e}
+function cls(s){return s>=70?"hot":s>=50?"mid":"low"}
+function ok(u){return /^https?:\/\//i.test(u)}
+function render(){
+ var q=document.getElementById("q").value.toLowerCase(),min=+document.getElementById("min").value,st=document.getElementById("st").value,box=document.getElementById("list");
+ box.textContent="";var n=0;
+ (DATA.jobs||[]).forEach(function(j){
+  var s=j.status||"new";
+  if(j.score<min)return;
+  if(st==="active"?(s==="dismissed"||s==="rejected"):(st!=="all"&&s!==st))return;
+  if(q&&(j.title+" "+j.company+" "+j.location).toLowerCase().indexOf(q)<0)return;
+  n++;var card=el("div","job"),sc=el("div","score "+cls(j.score),j.score),body=el("div");
+  var h=el("h2"),a=el(ok(j.url)?"a":"span",null,j.title);if(ok(j.url)){a.href=j.url;a.target="_blank";a.rel="noopener noreferrer"}h.appendChild(a);body.appendChild(h);
+  body.appendChild(el("div","meta",[j.company,j.location,j.salary,j.source].filter(Boolean).join(" · ")));
+  if(j.reasons&&j.reasons.length){var u=el("ul","why");j.reasons.forEach(function(r){u.appendChild(el("li",null,r))});body.appendChild(u)}
+  if(j.flags&&j.flags.length){var f=el("div","flags");j.flags.forEach(function(x){f.appendChild(el("span","flag",x))});body.appendChild(f)}
+  if(LIVE){var act=el("div","act");ST.forEach(function(x){var b=el("button",s===x?"on":"",x);b.onclick=function(){set(j,s===x?"new":x)};act.appendChild(b)});body.appendChild(act)}
+  card.appendChild(sc);card.appendChild(body);box.appendChild(card)});
+ if(!n)box.appendChild(el("div","empty","Nothing to show with these filters."+(DATA.pending?" "+DATA.pending+" postings are still waiting to be scored.":"")));
+ document.getElementById("sub").textContent=(DATA.roles||[]).join(" · ")+(DATA.roles&&DATA.roles.length?" — ":"")+"updated "+(DATA.now||"").replace("T"," ")+(DATA.pending?" — "+DATA.pending+" waiting to be scored":"");
+ var r=document.getElementById("runs");r.textContent="";(DATA.runs||[]).slice(0,6).forEach(function(x){r.appendChild(el("div",null,x.ts.replace("T"," ")+"  "+x.source+": "+x.new+" new"+(x.error?" (error: "+x.error+")":"")))})}
+function set(j,s){fetch("/api/status",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({id:j.id,status:s})}).then(function(){j.status=s;render()})}
+function load(){fetch("/api/jobs").then(function(r){return r.json()}).then(function(d){DATA=d;render()})}
+["q","min","st"].forEach(function(i){document.getElementById(i).oninput=render});
+if(LIVE){load();setInterval(load,60000)}else render();
+</script></body></html>

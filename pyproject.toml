@@ -16,10 +16,10 @@ dev = ["pytest>=8"]
 jarvoos = "jarvoos.cli:main"
 
 [tool.setuptools]
-packages = ["jarvoos"]
+packages = ["jarvoos", "jarvoos.radar"]
 
 [tool.setuptools.package-data]
-jarvoos = ["skills/*.md"]
+jarvoos = ["skills/*.md", "radar/*.html"]
 
 [tool.setuptools.dynamic]
 version = {attr = "jarvoos.__version__"}
