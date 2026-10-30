@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# Jarvoos installer. Needs: git, python3 >= 3.11, and access to the private repo (GitHub login via `gh auth login`).
-#   gh api repos/ms95ir-ctrl/jarvoos/contents/install.sh -H "Accept: application/vnd.github.raw" | bash
+# Jarvoos installer. Needs: git and python3 >= 3.11.
+#   curl -fsSL https://raw.githubusercontent.com/ms95ir-ctrl/jarvoos/main/install.sh | bash
 # Installs into ~/.local/share/jarvoos (code + venv) and links ~/.local/bin/jarvoos. No sudo, nothing else touched.
 set -euo pipefail
 

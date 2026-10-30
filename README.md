@@ -6,10 +6,10 @@ takes over the moment the local server fails, keyless web search, and markdown *
 
 ## Install
 
-You need a GitHub login that can read the repo (`gh auth login`), `git`, and Python 3.11+:
+You need `git` and Python 3.11+. Then:
 
 ```bash
-gh api repos/ms95ir-ctrl/jarvoos/contents/install.sh -H "Accept: application/vnd.github.raw" | bash
+curl -fsSL https://raw.githubusercontent.com/ms95ir-ctrl/jarvoos/main/install.sh | bash
 ```
 
 The installer ends by offering to run `jarvoos setup` (answer `n` to skip, or set `JARVOOS_NO_SETUP=1`).
