@@ -29,11 +29,21 @@ else
 fi
 
 [ -d "$DEST/venv" ] || "$PY" -m venv "$DEST/venv"
-"$DEST/venv/bin/pip" install --quiet --upgrade pip
 "$DEST/venv/bin/pip" install --quiet "$DEST/src"
 ln -sf "$DEST/venv/bin/jarvoos" "$BIN/jarvoos"
 
 echo
 echo "Installed: $BIN/jarvoos"
 case ":$PATH:" in *":$BIN:"*) ;; *) echo "Add $BIN to your PATH (e.g. echo 'export PATH=\"$BIN:\$PATH\"' >> ~/.bashrc)";; esac
-echo "Next: run  jarvoos setup   (endpoints and API keys)  then  jarvoos"
+
+# This script usually runs as `curl ... | bash`, so stdin is the script itself; questions go through /dev/tty.
+if ( : </dev/tty ) 2>/dev/null && [ -z "${JARVOOS_NO_SETUP:-}" ]; then
+  printf '\nSet up Jarvoos now (finds your local server, asks for an OpenRouter key, tests everything)? [Y/n] ' >/dev/tty
+  read -r ans </dev/tty || ans=n
+  case "${ans:-y}" in
+    [Nn]*) echo "Run  jarvoos setup  whenever you are ready." ;;
+    *) "$DEST/venv/bin/jarvoos" setup </dev/tty >/dev/tty 2>&1 && echo "Start chatting with:  jarvoos" || echo "Setup did not finish. Run  jarvoos setup  to try again." ;;
+  esac
+else
+  echo "Next: run  jarvoos setup  then  jarvoos"
+fi

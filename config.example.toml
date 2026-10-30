@@ -1,0 +1,45 @@
+# ~/.config/jarvoos/config.toml  (set JARVOOS_HOME to use another folder)
+# `jarvoos setup` writes this for you; edit by hand or with `jarvoos config set <key> <value>`.
+# API keys are NOT stored here: name an environment variable in api_key_env and put the value in
+# the environment or in ~/.config/jarvoos/secrets.env (mode 600, lines like OPENROUTER_API_KEY=sk-or-...).
+
+mode = "approve"            # approve = ask before write/exec tools, auto = never ask, chat = no tools
+chain = ["local", "openrouter"]   # first = primary, the rest are tried in order when it fails
+max_steps = 25              # tool-use steps per turn
+compact_at = 0.75           # compact the conversation at this share of the context window
+verbose = false
+
+# Strata (default port 8090). The model id comes from http://127.0.0.1:8090/v1/models.
+[providers.local]
+kind = "strata"             # strata | llamacpp | ollama | lmstudio | openrouter | openai (any other OpenAI-compatible URL)
+base_url = "http://127.0.0.1:8090/v1"
+model = "qwen3-30b-a3b"
+api_key_env = ""            # e.g. "JARVOOS_KEY_127_0_0_1_8090" if the server requires a key
+context_tokens = 131072     # 0 = unknown (32000 is assumed)
+tools = true                # false = chat only, no tool calls are sent
+thinking = "off"            # off | on | default
+first_token_timeout_s = 15
+idle_timeout_s = 60
+
+# llama-server must be started with --jinja or tool calls will not work:
+#   llama-server -m model.gguf --jinja -c 32768 --port 8080
+# [providers.llama]
+# kind = "llamacpp"
+# base_url = "http://127.0.0.1:8080/v1"
+# model = "model.gguf"
+# context_tokens = 32768
+
+[providers.openrouter]
+kind = "openrouter"
+base_url = "https://openrouter.ai/api/v1"
+model = "deepseek/deepseek-v4-flash"
+api_key_env = "OPENROUTER_API_KEY"
+context_tokens = 128000
+tools = true
+thinking = "default"
+first_token_timeout_s = 30
+idle_timeout_s = 60
+
+[search]
+provider = "ddg"            # ddg (no key) | searxng | exa (needs EXA_API_KEY)
+# searxng_url = "http://127.0.0.1:8888"
